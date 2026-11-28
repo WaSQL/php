@@ -24986,6 +24986,99 @@ function processActions(){
 			break;
 		}
 	}
+//---------- begin function commonUploadDangerousExtensions
+/**
+* @describe file extensions processFileUploads refuses because a web server may run them as code
+*	(or they reconfigure the server). Entries listed in $CONFIG['upload_allow_extensions']
+*	(comma separated) are removed from the list for sites that really need one of them.
+* @return array - lower-case extensions
+* @usage $exts=commonUploadDangerousExtensions();
+*/
+function commonUploadDangerousExtensions(){
+	global $CONFIG;
+	$exts=array('php','php2','php3','php4','php5','php6','php7','php8','phtml','pht','phtm','phps','phar','pgif','inc',
+		'shtml','shtm','stm','cgi','pl','pm','py','pyc','rb','sh','bash','ksh','csh','zsh','asp','aspx','asa','asax','ascx',
+		'ashx','asmx','cer','cshtml','vbhtml','jsp','jspx','jsw','jsv','jspf','do','action','cfm','cfml','cfc','htaccess',
+		'htpasswd','ini','exe','com','bat','cmd','vbs','vbe','wsf','wsh','ps1','psm1','msi','scr','dll','so','jar','war','hta');
+	if(isset($CONFIG['upload_allow_extensions']) && strlen($CONFIG['upload_allow_extensions'])){
+		$allow=preg_split('/[\s,;]+/',strtolower($CONFIG['upload_allow_extensions']),-1,PREG_SPLIT_NO_EMPTY);
+		$exts=array_values(array_diff($exts,$allow));
+	}
+	return $exts;
+}
+//---------- begin function commonUploadSafeName
+/**
+* @describe reduces an upload file name to a plain file name: no directory part (/ or \), no control
+*	characters, no leading/trailing spaces. Applied after every rename step in processFileUploads
+*	(X-Blob-Name header, {name}_rename, autonumber) so no request value can steer the file into
+*	another folder.
+* @param name string - proposed file name
+* @return string - safe base name ('' if nothing is left)
+* @usage $name=commonUploadSafeName($file['name']);
+*/
+function commonUploadSafeName($name){
+	$name=str_replace('\\','/',(string)$name);
+	$name=preg_replace('/[\x00-\x1f\x7f]+/','',$name);
+	$parts=explode('/',$name);
+	$name=trim(end($parts));
+	if($name=='.' || $name=='..'){return '';}
+	return $name;
+}
+//---------- begin function commonUploadDangerousName
+/**
+* @describe true when an upload file name must be refused: empty, a dot-file (.htaccess, .user.ini)
+*	or any dot-separated part is a dangerous extension (x.php, x.php.jpg, x.php.chunk1 - servers
+*	with AddHandler run x.php.jpg, and chunked uploads are merged back to x.php)
+* @param name string - file name (base name)
+* @return boolean
+* @usage if(commonUploadDangerousName($file['name'])){...refuse...}
+*/
+function commonUploadDangerousName($name){
+	$name=strtolower(trim((string)$name));
+	if(!strlen($name) || $name[0]=='.'){return true;}
+	$parts=explode('.',$name);
+	array_shift($parts);
+	if(!count($parts)){return false;}
+	$bad=commonUploadDangerousExtensions();
+	foreach($parts as $part){
+		//ignore a trailing chunk counter, check what it will be merged back into
+		if(preg_match('/^chunk[0-9]+$/',$part)){continue;}
+		if(in_array(trim($part),$bad,true)){return true;}
+	}
+	return false;
+}
+//---------- begin function commonUploadSafeRelPath
+/**
+* @describe validates a request-supplied upload folder ({name}_path / _path): it must be a path
+*	under the document root - no .. segment, no NUL, no drive letter or scheme
+* @param path string - e.g. /images/students or images/account_1
+* @return mixed - the normalized path starting with / , or false when it is not allowed
+* @usage $path=commonUploadSafeRelPath($_REQUEST['photo_path']);
+*/
+function commonUploadSafeRelPath($path){
+	$path=str_replace('\\','/',trim((string)$path));
+	if(!strlen($path) || strpos($path,"\0")!==false || preg_match('/^[a-z][a-z0-9+.\-]*:/i',$path)){return false;}
+	foreach(explode('/',$path) as $seg){
+		if(trim($seg)=='..'){return false;}
+	}
+	$path='/'.ltrim(preg_replace('#/+#','/',$path),'/');
+	return rtrim($path,'/');
+}
+//---------- begin function commonUploadRefuse
+/**
+* @describe records why an uploaded file was not saved (in $_REQUEST[{pname}_error] and debugValue)
+* @return void
+* @usage commonUploadRefuse($file,'File type not allowed');
+*/
+function commonUploadRefuse($file,$message){
+	$error=array(
+		'error'=>'processFileUploads',
+		'filename'=>isset($file['name'])?$file['name']:'',
+		'message'=>$message
+	);
+	debugValue($error);
+	$_REQUEST[$file['pname'].'_error']=$error;
+}
 //---------- begin function processFileUploads---------------------------------------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -25113,17 +25206,28 @@ function processFileUploads($docroot=''){
 				$file['name']=$rename . ".{$ext}";
 				$file['name']=str_replace(' ','_',$file['name']);
 			}
-			if(strlen($_REQUEST['_dir'])){
+			//final file name: no directory part (X-Blob-Name, _rename and the client name are all request data)
+			$file['name']=commonUploadSafeName($file['name']);
+			if(commonUploadDangerousName($file['name'])){
+				commonUploadRefuse($file,'File type not allowed: '.$file['name'].' (script, server-config or executable files cannot be uploaded)');
+				continue;
+			}
+			//_dir (base64 absolute folder) is for the admin file manager only
+			if(isset($_REQUEST['_dir']) && strlen($_REQUEST['_dir']) && isAdmin()){
 				$cpath =decodeBase64($_REQUEST['_dir']);
 				$cpath=str_replace('//','/',$cpath);
 				$abspath=$cpath .'/'. $file['name'];
 				if(!is_dir($cpath) && strlen($_REQUEST[$file['iname'].'_path'])){
-					$path=$_REQUEST[$file['iname'].'_path'];
+					$path=commonUploadSafeRelPath($_REQUEST[$file['iname'].'_path']);
+					if($path===false){
+						commonUploadRefuse($file,'Upload folder not allowed: '.$_REQUEST[$file['iname'].'_path']);
+						continue;
+					}
 					$cpath=$docroot . $path;
 					$cpath=str_replace('//','/',$cpath);
 					if(!is_dir($cpath)){
 						@trigger_error("");
-						mkdir($cpath,0777,1);
+						mkdir($cpath,0775,1);
 					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
@@ -25149,11 +25253,16 @@ function processFileUploads($docroot=''){
 					$abspath=str_replace('[]','',$abspath);
 				}
 				else{
+					$path=commonUploadSafeRelPath($path);
+					if($path===false){
+						commonUploadRefuse($file,'Upload folder not allowed: '.$_REQUEST[$file['iname'].'_path']);
+						continue;
+					}
 					$cpath=$docroot . $path;
 					$cpath=str_replace('//','/',$cpath);
 					if(!is_dir($cpath)){
 						@trigger_error("");
-						mkdir($cpath,0777,1);
+						mkdir($cpath,0775,1);
 					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
@@ -25161,13 +25270,17 @@ function processFileUploads($docroot=''){
 					$abspath=str_replace('[]','',$abspath);
 				}
 			}
-			elseif(strlen($_REQUEST['_path'])){
-				$path=$_REQUEST['_path'];
+			elseif(isset($_REQUEST['_path']) && strlen($_REQUEST['_path'])){
+				$path=commonUploadSafeRelPath($_REQUEST['_path']);
+				if($path===false){
+					commonUploadRefuse($file,'Upload folder not allowed: '.$_REQUEST['_path']);
+					continue;
+				}
 				$cpath=$docroot . $path;
 				$cpath=str_replace('//','/',$cpath);
 				if(!is_dir($cpath)){
 					@trigger_error("");
-					mkdir($cpath,0777,1);
+					mkdir($cpath,0775,1);
 				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
@@ -25180,7 +25293,7 @@ function processFileUploads($docroot=''){
 				$cpath=str_replace('//','/',$cpath);
 				if(!is_dir($cpath)){
 					@trigger_error("");
-					mkdir($cpath,0777,1);
+					mkdir($cpath,0775,1);
 				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
@@ -25195,7 +25308,7 @@ function processFileUploads($docroot=''){
             $absdir=getFilePath($abspath);
             if(!is_dir($absdir)){
 				@trigger_error("");
-				mkdir($absdir,0777,1);
+				mkdir($absdir,0775,1);
 			}
     		if(!file_exists($file['tmp_name'])){
             	$_REQUEST[$file['pname'].'_upload_error']=$file['tmp_name'] . " does not exist";
@@ -25349,6 +25462,15 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['file_process']) && strlen($CONFIG['file_process'])){
 		$process=$CONFIG['file_process'];
 	}
+	//a request may only name a callback the server allows: admins, $CONFIG['file_process'] itself,
+	//or a function listed in $CONFIG['file_process_allowed'] (comma separated)
+	if(strlen($process) && !isAdmin() && !(isset($CONFIG['file_process']) && $process===$CONFIG['file_process'])){
+		$allowed=isset($CONFIG['file_process_allowed'])?preg_split('/[\s,;]+/',strtolower($CONFIG['file_process_allowed']),-1,PREG_SPLIT_NO_EMPTY):array();
+		if(!in_array(strtolower($process),$allowed,true)){
+			$_REQUEST[$name.'_process_results']="function {$process} is not allowed - list it in file_process_allowed in config.xml";
+			$process='';
+		}
+	}
 	if(strlen($process)){
 		if(function_exists($process)){
 			$_REQUEST[$name.'_process_results']=call_user_func($process,$name,$afile);
@@ -25376,12 +25498,15 @@ function commonProcessFileActions($name,$afile){
 		//bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg
 		$sets=preg_split('/\,/',strtolower($convert));
 		foreach($sets as $set){
-			list($from,$to)=preg_split('/\-/',$set,2);
+			//only plain extension pairs like heic-jpg (the target becomes part of a shell command)
+			if(!preg_match('/^[a-z0-9]{1,10}\-[a-z0-9]{1,10}$/',trim($set))){continue;}
+			list($from,$to)=preg_split('/\-/',trim($set),2);
 			//echo " -- convert: {$from}=={$ext}<br>";
 			if($from==$ext){
+				if(commonUploadDangerousName("x.{$to}")){continue;}
 				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_converted.{$to}";
-				$cmd="{$cmd} \"{$afile}\" \"{$tfile}\"";
+				$cmd="{$cmd} ".escapeshellarg($afile).' '.escapeshellarg($tfile);
         		$ok=cmdResults($cmd);
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
@@ -25405,6 +25530,12 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
 		$resize=$CONFIG['resize'];
 	}
+	//only an ImageMagick geometry like 800x600, 800, x600, 50% or 800x600> (it is passed to a shell command)
+	if(strlen($resize) && !preg_match('/^[0-9]{0,5}(x[0-9]{1,5})?[%!<>^@]?$/i',trim($resize))){
+		$_REQUEST[$name.'_resized']="invalid resize value - use a geometry like 800x600";
+		$resize='';
+	}
+	$resize=trim($resize);
 	if(strlen($resize) && stringContains($mimetype,'image')){
 		if(!isset($CONFIG['resize_command'])){
 			$CONFIG['resize_command']="convert -thumbnail";
@@ -25413,7 +25544,9 @@ function commonProcessFileActions($name,$afile){
 		$cmd=$CONFIG['resize_command'];
 		$fname=getFileName($afile,1);
 		$refile=str_replace($fname,$fname.'_resized',$afile);
-		$cmd="{$cmd} {$resize} \"{$afile}\" -auto-orient \"{$refile}\"";
+		//$resize is validated to [0-9x%!<>^@] above, so plain double quotes are safe on Linux and Windows
+		//(escapeshellarg would strip the % of a 50% resize on Windows)
+		$cmd="{$cmd} \"{$resize}\" ".escapeshellarg($afile).' -auto-orient '.escapeshellarg($refile);
 		$ok=cmdResults($cmd);
 		if(is_file($refile) && filesize($refile) > 0){
 			unlink($afile);
@@ -25435,6 +25568,12 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['maxkb']) && strlen($CONFIG['maxkb'])){
 		$maxkb=$CONFIG['maxkb'];
 	}
+	//a whole number of kilobytes only (it is passed to a shell command)
+	if(strlen($maxkb) && !preg_match('/^[0-9]{1,7}$/',trim($maxkb))){
+		$_REQUEST[$name.'_maxkb_applied']="invalid maxkb value - use a whole number of kilobytes";
+		$maxkb='';
+	}
+	$maxkb=trim($maxkb);
 	if(strlen($maxkb) && stringContains($mimetype,'image')){
 		$curext=strtolower(getFileExtension($afile));
 		//jpeg:extent and webp:target-size make ImageMagick search quality settings to hit a byte budget instead of a fixed -quality guess
@@ -25452,7 +25591,7 @@ function commonProcessFileActions($name,$afile){
 			$cmd=$CONFIG['maxkb_command'];
 			$fname=getFileName($afile,1);
 			$mkfile=str_replace($fname,$fname.'_maxkb',$afile);
-			$cmd="{$cmd} \"{$afile}\" -auto-orient -define {$define} \"{$mkfile}\"";
+			$cmd="{$cmd} ".escapeshellarg($afile).' -auto-orient -define '.escapeshellarg($define).' '.escapeshellarg($mkfile);
 			$ok=cmdResults($cmd);
 			if(is_file($mkfile) && filesize($mkfile) > 0){
 				unlink($afile);
@@ -25487,18 +25626,21 @@ function commonProcessFileActions($name,$afile){
 		//mp3-mp3,wav-mp3
 		$sets=preg_split('/\,/',strtolower($reencode));
 		foreach($sets as $set){
-			list($from,$to)=preg_split('/\-/',$set,2);
+			//only plain extension pairs like wav-mp3 (the target becomes part of a shell command)
+			if(!preg_match('/^[a-z0-9]{1,10}\-[a-z0-9]{1,10}$/',trim($set))){continue;}
+			list($from,$to)=preg_split('/\-/',trim($set),2);
 			if($from==$ext){
+				if(commonUploadDangerousName("x.{$to}")){continue;}
 				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
 				if(is_file($tfile)){
 					unlink($tfile);
 				}
-				$cmd="{$cmd} \"{$afile}\"";
+				$cmd="{$cmd} ".escapeshellarg($afile);
 				if($to=='mp4'){
 					$cmd .= ' -vcodec h264 -acodec mp3 ';
 				}
-				$cmd .=" \"{$tfile}\"";
+				$cmd .=' '.escapeshellarg($tfile);
 				$_REQUEST[$name.'_reencode_cmd']=$cmd;
         		$ok=cmdResults($cmd);
         		$_REQUEST[$name.'_reencode_cmd_results']=$ok;

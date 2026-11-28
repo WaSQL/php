@@ -722,6 +722,16 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
   Both make `convert` iterate quality settings until the encode fits the budget, so you get the best quality achievable for that size rather than an arbitrary fixed compression level. PNG has no lossy quality knob, so there's no equivalent — convert to `webp` first if a PNG needs a byte-size cap.
 - **`reencode`** — audio/video via `ffmpeg`, e.g. `data-reencode="wav-mp3"`.
 
+**Upload security rules (bug #98/#99, fixed 2026-11-28).** `processFileUploads()` runs **before login** on any multipart request with `_table`+`_action` (or `_dir`+`_menu`), so everything a request can set is treated as hostile:
+- **Refused file types.** A file is not saved (`$_REQUEST['{field}_error']` explains why) when **any** dot-part of its name is a script, server-config or executable type: `php`/`phtml`/`phar`/`php3-8`/`pht`/`phps`, `shtml`, `cgi`/`pl`/`py`/`rb`/`sh`, `asp(x)`/`jsp`/`cfm`, `htaccess`/`ini`, `exe`/`bat`/`ps1`/`dll`/`jar`... It also refuses dot-files such as `.htaccess` and `.user.ini`. `x.php.jpg` and chunked `x.php.chunk1` are refused too. Re-allow specific types per site with `<upload_allow_extensions>exe,msi</upload_allow_extensions>` in config.xml (`commonUploadDangerousExtensions()` holds the list). **HTML and SVG are still allowed**; they can carry script, so serve user uploads from a folder that isn't trusted, or check them yourself.
+- **File name.** The name is reduced to a plain base name (`commonUploadSafeName()`), so `X-Blob-Name`, `{field}_rename` and the client file name can't move the file into another folder.
+- **Folder.**
+  - `{field}_path` / `_path` must be a path under the document root (`commonUploadSafeRelPath()`): relative or `/`-rooted, with no `..` and no drive letter. `wasql_temp_path` still works.
+  - `_dir` (base64 absolute folder, used by the file manager) is **admin-only**; for anyone else it's ignored and the file goes to `/uploads`.
+  - New folders are created `0775`.
+- **`process` callback.** `{field}_process` / `data-process` from a request is honoured only for admins or when the function is listed in `<file_process_allowed>fn1,fn2</file_process_allowed>` in config.xml. `$CONFIG['file_process']` itself still works.
+- **convert / resize / maxkb / reencode** values are validated before they reach the shell (`from-to` pairs must be `[a-z0-9]`; resize must be an ImageMagick geometry like `1920x1920>`; maxkb must be digits; a convert target can't be a refused type), and file paths are passed through `escapeshellarg()`.
+
 **SEO-driven web images:** to land an upload under a KB budget as WebP, combine resize + convert + maxkb on the field: `data-resize="1920x1920>" data-convert="jpg-webp,png-webp" data-maxkb="300"` — dimensions first, then format, then the byte-size search runs last against the already-converted file.
 
 ---

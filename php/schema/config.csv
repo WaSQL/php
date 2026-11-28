@@ -33,6 +33,8 @@ email_encrypt,email,,,default encrypt user for sendmail,
 email_from,email,,,default from for sendmail,
 email_timeout,email,,,default timeout for sendmail,
 file_process,process,,,PHP function call to when a file is uploaded. Name and afile are sent to function,
+file_process_allowed,process,,,comma separated list of functions a form may name in {field}_process / data-process (admins can name any; others are refused),
+upload_allow_extensions,process,,,comma separated file extensions to allow even though processFileUploads refuses them by default (e.g. exe;msi),
 log_queries,logs,,0,log queries run from the Database SQL Prompt,&buildFormSelectOnOff('current_value');
 login_title,auth,,,title to display on login form,
 logo,auth,,/wfiles/iconsets/64/wasql.png,path to your logo.,
