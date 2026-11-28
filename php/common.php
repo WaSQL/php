@@ -26166,6 +26166,41 @@ function commonEmailFrom(){
 	}
 	return $from;
 }
+//---------- begin function commonMailHeaderSafe
+/**
+* @describe makes a value safe to put on a single email header line by replacing carriage returns,
+*	line feeds and NUL bytes with a space. A line break inside a header value (From, To, Cc, Bcc,
+*	Reply-To, Subject) would let whoever supplied it add extra headers or recipients - e.g. a contact
+*	form whose "name" field contains "x\r\nBcc: list@spam.example".
+* @param value string - the header value
+* @return string - the value on one line, trimmed
+* @usage $subject=commonMailHeaderSafe($_REQUEST['subject']);
+*/
+function commonMailHeaderSafe($value){
+	if(is_array($value) || is_object($value)){return '';}
+	return trim(preg_replace('/[\r\n\0]+/',' ',(string)$value));
+}
+//---------- begin function commonMailSanitizeParams
+/**
+* @describe applies commonMailHeaderSafe to every header-bound option of a sendMail-style params
+*	array (to, from, cc, bcc, reply-to, replyto, reply_to, subject) and to each -headers entry.
+*	Called at the top of sendMail, sendSMTPMail and wasqlMail so every site is protected centrally.
+* @param params array - sendMail options
+* @return array - the same options with header values on one line
+* @usage $params=commonMailSanitizeParams($params);
+*/
+function commonMailSanitizeParams($params){
+	if(!is_array($params)){return $params;}
+	foreach(array('to','from','cc','bcc','reply-to','replyto','reply_to','subject') as $key){
+		if(isset($params[$key])){$params[$key]=commonMailHeaderSafe($params[$key]);}
+	}
+	if(isset($params['-headers']) && is_array($params['-headers'])){
+		foreach($params['-headers'] as $i=>$header){
+			$params['-headers'][$i]=commonMailHeaderSafe($header);
+		}
+	}
+	return $params;
+}
 //---------- begin function sendMail---------------------------------------
 /**
 * @describe sends an email and returns null on success or the error string
@@ -26197,6 +26232,8 @@ function sendMail($params=array()){
 			));
 	*/
 	global $CONFIG;
+	//header values (to, from, cc, bcc, reply-to, subject) must be single-line - see commonMailSanitizeParams
+	$params=commonMailSanitizeParams($params);
 	if(isset($CONFIG['phpmailer'])){
         loadExtras('phpmailer');
 		return phpmailerSendMail($params);
@@ -26364,6 +26401,8 @@ function sendMail($params=array()){
 * @exclude  - this function will be depreciated and thus excluded from the manual
 */
 function sendSMTPMail($params=array()){
+	//header values (to, from, cc, bcc, reply-to, subject) must be single-line - see commonMailSanitizeParams
+	$params=commonMailSanitizeParams($params);
 	//verify required fields
 	$rtn=array();
 	//check for default smtp setting in conf
@@ -26642,6 +26681,8 @@ function swfChart($recs=array(),$params=array(),$crc=''){
 */
 function wasqlMail($opts=array(),$debug=0){
 	global $CONFIG;
+	//header values (to, from, cc, bcc, reply-to, subject) must be single-line - see commonMailSanitizeParams
+	$opts=commonMailSanitizeParams($opts);
 	if(!isset($opts['smtp']) && isset($CONFIG['smtp'])){
 		$opts['smtp']=$CONFIG['smtp'];
 		if(isset($CONFIG['smtpuser'])){$opts['smtpuser']=$CONFIG['smtpuser'];}

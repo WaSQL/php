@@ -11,11 +11,15 @@
 	  exec      eval/include/require/system/exec/unserialize/file access/extract
 	  include   includePage()/loadDBFunctions() with a request-controlled name
 	  redirect  header('Location: ...') built from request data
+	  mailheader request data in the from/subject/to/cc/bcc/reply-to of a sendMail-style options array
+	  auth      a page with exec/include/raw-SQL findings and no access check, or $USER[..]=.. inside an if()
 	Sources: $_REQUEST $_GET $_POST $_COOKIE $_FILES $PASSTHRU and $_SERVER HTTP_*, REQUEST_URI,
 	QUERY_STRING, PHP_SELF, PATH_INFO.
 
-	Taint is tracked per record (all fields of one page together), flow- and scope-insensitive,
-	through assignments, foreach over request data, and calls to functions defined in that record.
+	Taint is tracked per record (all fields of one page together) and per scope: each named function
+	is its own scope, top-level code (controller, body, template) shares one, and `global $x` maps back
+	to it. It follows assignments, foreach over request data, and calls to functions defined in that
+	record (flow-insensitive within a scope).
 	Expect some false positives: "low" means "go look", not "safe".
 
 	Layout:
@@ -38,7 +42,7 @@ function securityPatterns(){
 	$common='isset|empty|isNum|is_numeric|ctype_digit|ctype_alnum|intval|floatval|boolval|abs|round|ceil|floor|'
 		.'count|sizeof|strlen|commonStrlen|in_array|array_key_exists|is_array|isEmail|isDate|strtotime|'
 		.'md5|sha1|crc32|hash|password_hash|password_verify|base64_encode|bin2hex|uniqid|date|time|mktime|'
-		.'number_format|formatMoney|preg_match|filter_var|commonFormatPhone|getDBCount|dbGetCount';
+		.'number_format|formatMoney|preg_match|filter_var|commonFormatPhone|getDBCount|dbGetCount|escapeshellarg|escapeshellcmd';
 	$sqlsan='databaseEscapeString|dbEscapeString|addslashes|mysqli_real_escape_string|real_escape_string|pg_escape_string|quote';
 	$htmlnames='encodeHtml|htmlspecialchars|htmlentities|strip_tags|removeHtml|urlencode|rawurlencode|encodeURL|json_encode|encodeJson';
 	$htmlsan=$htmlnames.'|nl2br\s*\(\s*encodeHtml';
@@ -67,19 +71,25 @@ function securityPatterns(){
 			str_split urldecode rawurldecode base64_decode json_decode decodejson stripslashes html_entity_decode
 			htmlspecialchars_decode nl2br str_pad strrev wordwrap array_values array_keys array_merge array_filter
 			array_map array_unique array_slice array_reverse reset end current array_shift array_pop strval str_repeat
-			truncatewords preg_quote utf8_decode utf8_encode mb_convert_encoding iconv'),
+			truncatewords preg_quote utf8_decode utf8_encode mb_convert_encoding iconv
+			getfileextension pathinfo basename'),
 		'sql_strong'=>'~\bselect\b[\s\S]+?\bfrom\b|\bupdate\s+[`\w.]+\s+set\b|\binsert\s+(?:ignore\s+)?into\b|\bdelete\s+from\b|\breplace\s+into\b|\btruncate\s+(?:table\s+)?[`\w]~i',
-		'sql_weak'=>'~\b(?:where|and|or|having|on)\s+\(?[`\w.()]+\s*(?:=|<>|!=|<=|>=|<|>|\blike\b|\bin\s*\(|\bis\b|\bbetween\b|\bregexp\b)|\border\s+by\b|\bgroup\s+by\b|\blimit\s+[\d{$]|[\w}\]`]\s*(?:=|<>|!=)\s*\'\{?\$|\blike\s*\'%?\{?\$~i',
+		'sql_weak'=>'~\b(?:where|and|or|having|on)\s+\(?[`\w.()]+\s*(?:=|<>|!=|<=|>=|<|>|\blike\b|\bin\s*\(|\bis\b|\bbetween\b|\bregexp\b)|\border\s+by\b|\bgroup\s+by\b|\blimit\s+[\d{$]|[\w}\]`\'"]\s*(?:=|<>|!=)\s*\'\{?\$|\blike\s*\'%?\{?\$~i',
 		'sql_colassign'=>'~^\s*\(?\s*[`\w.]+\s*(?:=|<>|!=|\blike\b|\bin\s*\()\s*\'?%?$~i',
 		'html_like'=>'~<[a-zA-Z/!]|\b(?:href|src|value|onclick|style|class)\s*=~i',
 		'sql_keys'=>array('-where'=>1,'-filter'=>1,'-order'=>1,'-query'=>1,'-fields'=>1,'-group'=>1,'-having'=>1,'-limit'=>1,'-offset'=>1,'-search'=>1),
 		'guards'=>array(
 			'~\b(?:isNum|is_numeric|ctype_digit|ctype_alnum|in_array|isEmail|isDate|array_key_exists|intval|filter_var)\s*\(\s*\$([A-Za-z_]\w*)\s*[,)]~i',
-			'~\bpreg_match\s*\([^,]+,\s*\$([A-Za-z_]\w*)\s*\)~i',
+			'~\bpreg_match\s*\([^,]+,\s*(?:\(\s*string\s*\)\s*)?\$([A-Za-z_]\w*)\s*\)~i',
 			'~\$([A-Za-z_]\w*)\s*=\s*'.$cast.'\$\1\b~i',
 			'~\bswitch\s*\(\s*\$([A-Za-z_]\w*)\s*\)~i',
+			//comparison with a non-empty literal: if($ext=='stl' || $ext=='3mf')
+			'~\$([A-Za-z_]\w*)\s*===?\s*([\'"])[^\'"_]+\2~',
+			'~([\'"])[^\'"_]+\1\s*===?\s*\$([A-Za-z_]\w*)~',
+			//allow-list rejection: if(!isset($voices[$lang])){return;} (a plain isset() is just a key lookup)
+			'~!\s*isset\s*\(\s*\$\w+(?:\[[^\]]*\])*\s*\[\s*\$([A-Za-z_]\w*)\s*\]\s*\)~i',
 		),
-		'exec'=>'~(?<![$\w>:])(?:eval|evalPHP|system|exec|shell_exec|passthru|popen|proc_open|unserialize|assert|create_function|file_put_contents|file_get_contents|fopen|readfile|unlink|move_uploaded_file|copy|rename|extract|parse_str|setFileContents|getFileContents)\s*\(|(?<![$\w>:])(?:include|include_once|require|require_once)\b~i',
+		'exec'=>'~(?<![$\w>:])(?:eval|evalPHP|system|exec|shell_exec|passthru|popen|proc_open|unserialize|assert|create_function|file_put_contents|file_get_contents|fopen|readfile|unlink|move_uploaded_file|copy|rename|extract|parse_str|setFileContents|getFileContents|cmdResults|cmdResults2|streamCmdResults|evalPythonCode)\s*\(|(?<![$\w>:])(?:include|include_once|require|require_once)\b~i',
 		'include'=>'~(?<![$\w>:])(?:includePage|loadDBFunctions|includeDBOnce)\s*\(~i',
 		'header'=>'~(?<![$\w>:])header\s*\(~i',
 		'sql_exec_call'=>'~\b(?:executeSQL|dbExecuteSQL|dbQueryResults|dbGetRecords?|getDBRecords?|databaseQuery|mysqli_query|query)\s*\(~i',
@@ -98,6 +108,32 @@ function securityPatterns(){
 		'sources'=>array('_REQUEST'=>1,'_GET'=>1,'_POST'=>1,'_COOKIE'=>1,'_FILES'=>1,'PASSTHRU'=>1),
 		'skip_vars'=>array('this'=>1,'GLOBALS'=>1,'USER'=>1,'CONFIG'=>1,'PAGE'=>1,'TEMPLATE'=>1,'DATABASE'=>1),
 		'severities'=>array('low'=>0,'medium'=>1,'high'=>2),
+		//rejection applied to a request expression itself: if(!preg_match('/^\d+$/',$_REQUEST['id'])){...return}
+		//only the negated (reject-and-exit) form counts - a positive if(isNum($_REQUEST['id'])){...} only covers its own block
+		'src_guards'=>array(
+			'~!\s*(?:isNum|is_numeric|ctype_digit|ctype_alnum|in_array|isEmail|isDate|filter_var)\s*\(\s*(?:\(\s*string\s*\)\s*)?(\$(?:_REQUEST|_GET|_POST|_COOKIE|PASSTHRU)\s*\[[^\]]*\])~i',
+			'~!\s*preg_match\s*\([^,]+,\s*(?:\(\s*string\s*\)\s*)?(\$(?:_REQUEST|_GET|_POST|_COOKIE|PASSTHRU)\s*\[[^\]]*\])\s*\)~i',
+		),
+		//a request value that carries a whole SQL statement ($_REQUEST['sql'] passed to anything)
+		'rawsql_key'=>'~\[\s*[\'"]?(?:sql|query|sqlquery|sql_query|statement)[\'"]?\s*\]~i',
+		//access checks that count as "this page requires a login"
+		'auth_call'=>'~\b(?:isUser|isAdmin|userIsAdmin|isLoggedIn|\w*HasPerm\w*|\w*Require(?:Admin|Login|User)\w*|userLoginForm)\s*\(|\$USER\s*\[\s*[\'"](?:_id|utype)[\'"]\s*\]|setView\s*\(\s*[\'"](?:login|no_access)~i',
+		//$USER[...] = ... inside an if/elseif/while condition (assignment where a comparison was meant)
+		'auth_assign'=>'~\b(?:if|elseif|while)\s*\(.*?(\$USER\s*\[[^\]]*\])\s*=(?![=>])~is',
+		//file functions whose danger is the path argument(s) only: name => allowed argument indexes
+		'path_args'=>array('file_put_contents'=>array(0),'setfilecontents'=>array(0),'file_get_contents'=>array(0),
+			'getfilecontents'=>array(0),'fopen'=>array(0),'readfile'=>array(0),'unlink'=>array(0),
+			'move_uploaded_file'=>array(1),'copy'=>array(0,1),'rename'=>array(0,1)),
+		'common_san_names'=>'~^(?:'.$common.')$~i',
+		//$_FILES keys PHP fills in itself (only name/type/full_path come from the client)
+		'files_safe'=>'~^(?:\s*\[[^\]]*\])?\s*\[\s*[\'"](?:tmp_name|error|size)[\'"]~',
+		//sendMail/commonSendMail option keys that become mail headers
+		'mail_keys'=>array('from'=>1,'subject'=>1,'to'=>1,'cc'=>1,'bcc'=>1,'reply-to'=>1,'replyto'=>1),
+		'mail_opt_keys'=>array('to'=>1,'from'=>1,'subject'=>1,'message'=>1),
+		'mail_strip'=>array('str_replace'=>1,'str_ireplace'=>1,'preg_replace'=>1,'strtr'=>1),
+		'mail_page'=>'~\b(?:sendMail|commonSendMail|phpmailerSendMail)\s*\(|_sendmail~i',
+		//preg_replace('/[^a-z0-9-]/','',$x): keeps only an allow-listed character class
+		'whitelist_re'=>'~^(.)\[\^[^\]\'"<>]*\][+*]?\1[a-z]*$~',
 	);
 	return $p;
 }
@@ -172,9 +208,11 @@ function securityScanTokenize($code,$base){
 
 //---------- begin function securityScanStatements
 /**
-* @describe group segments into statements, splitting code on ; { } and a line-ending : (case labels)
+* @describe group segments into statements, splitting code on ; { } and a line-ending : (case labels).
+*	Every split is returned with its delimiter (even when the statement is empty) so callers can
+*	follow { } nesting.
 * @param segs array - from securityScanTokenize
-* @return array - list of segment lists
+* @return array - list of array(segment list, delimiter) - delimiter is ; { } : or '' at the end
 * @usage $stmts=securityScanStatements($segs);
 */
 function securityScanStatements($segs){
@@ -188,14 +226,29 @@ function securityScanStatements($segs){
 		foreach($ms[0] as $mm){
 			$piece=substr($text,$pos,$mm[1]-$pos);
 			if(strlen(trim($piece))){$cur[]=array('code',$piece,$seg[2]+$pos);}
-			if(count($cur)){$out[]=$cur;$cur=array();}
+			$out[]=array($cur,$mm[0]);
+			$cur=array();
 			$pos=$mm[1]+strlen($mm[0]);
 		}
 		$piece=substr($text,$pos);
 		if(strlen(trim($piece))){$cur[]=array('code',$piece,$seg[2]+$pos);}
 	}
-	if(count($cur)){$out[]=$cur;}
+	if(count($cur)){$out[]=array($cur,'');}
 	return $out;
+}
+
+//---------- begin function securityScanQ
+/**
+* @describe scope-qualified variable key "scope|name" for the statement being processed
+*	($pg['cur']). Top-level code (controller, body, templates) is scope ''; a function body is its
+*	lower-cased name; a `global $x` inside a function maps $x back to ''.
+* @return string
+* @usage $key=securityScanQ($pg,'id');
+*/
+function securityScanQ($pg,$name){
+	$s=isset($pg['cur'])?$pg['cur']:'';
+	if($s!=='' && isset($pg['globals'][$s][$name])){$s='';}
+	return $s.'|'.$name;
 }
 
 //---------- begin function securityScanVars
@@ -260,7 +313,8 @@ function securityScanFlatten($segs){
 		elseif($s[0]=='dq' || $s[0]=='bt'){
 			$names=array();
 			foreach(securityScanVars($s[1],true) as $v){$names[]='$'.$v[0];}
-			$out.='"'.implode(' ',$names).'"';
+			//a plain "key" keeps its (masked) text so labels like $_REQUEST["id"] survive
+			$out.=count($names)?'"'.implode(' ',$names).'"':'"'.preg_replace('~[,()\[\]{}$]~','_',$s[1]).'"';
 		}
 		else{$out.="'".preg_replace('~[,()\[\]{}$]~','_',$s[1])."'";}
 	}
@@ -323,7 +377,9 @@ function securityScanSplitArgs($flat,$pos){
 function securityScanNewPage($record,$files){
 	$p=securityPatterns();
 	$pg=array('record'=>$record,'files'=>array(),'stmts'=>array(),'funcs'=>array(),'guarded'=>array(),
-		'taint'=>array(),'mixed'=>array(),'findings'=>array());
+		'taint'=>array(),'mixed'=>array(),'weak'=>array(),'findings'=>array(),
+		'cleaned'=>array('all'=>array(),'sql'=>array(),'html'=>array(),'mail'=>array()),'mailpage'=>false,
+		'globals'=>array(),'cur'=>'','srcguarded'=>array(),'hasauth'=>false);
 	$raw=array();
 	foreach($files as $fi=>$f){
 		$pg['files'][$fi]=$f;
@@ -336,25 +392,58 @@ function securityScanNewPage($record,$files){
 			if(!strlen(trim($body))){continue;}
 			$segs=securityScanTokenize($body,$m[2][1]);
 			if($tag=='='){
-				$pg['stmts'][]=array('segs'=>$segs,'file'=>$fi,'echo'=>true);
+				$pg['stmts'][]=array('segs'=>$segs,'file'=>$fi,'echo'=>true,'scope'=>'');
+				continue;
 			}
-			else{
-				foreach(securityScanStatements($segs) as $s){
-					$pg['stmts'][]=array('segs'=>$s,'file'=>$fi,'echo'=>false);
+			//follow { } nesting so each statement knows the named function it is in
+			$stack=array();
+			$depth=0;
+			foreach(securityScanStatements($segs) as $sd){
+				list($s,$delim)=$sd;
+				if($delim=='{' && count($s) && preg_match('~\bfunction\s+&?\s*([A-Za-z_]\w*)\s*\(~i',securityScanFlatten($s),$fm)){
+					$stack[]=array(strtolower($fm[1]),$depth);
+				}
+				$scope=count($stack)?$stack[count($stack)-1][0]:'';
+				if(count($s)){$pg['stmts'][]=array('segs'=>$s,'file'=>$fi,'echo'=>false,'scope'=>$scope);}
+				if($delim=='{'){$depth++;}
+				elseif($delim=='}'){
+					$depth--;
+					if(count($stack) && $stack[count($stack)-1][1]==$depth){array_pop($stack);}
 				}
 			}
 		}
 	}
 	$raw=implode("\n",$raw);
+	$pg['mailpage']=preg_match($p['mail_page'],$raw)==1;
 	preg_match_all($p['funcdef'],$raw,$ms,PREG_SET_ORDER);
 	foreach($ms as $m){
 		preg_match_all('~\$(\w+)~',$m[2],$pm);
 		$pg['funcs'][strtolower($m[1])]=$pm[1];
 	}
-	foreach($p['guards'] as $rx){
-		preg_match_all($rx,$raw,$gm);
-		foreach($gm[1] as $g){$pg['guarded'][$g]=1;}
+	//`global $x` inside a function refers to the top-level $x
+	foreach($pg['stmts'] as $st){
+		if($st['scope']==='' || $st['segs'][0][0]!='code'){continue;}
+		if(preg_match('~^\s*global\s+(.+)$~is',$st['segs'][0][1],$gm)){
+			preg_match_all('~\$(\w+)~',$gm[1],$gv);
+			foreach($gv[1] as $g){$pg['globals'][$st['scope']][$g]=1;}
+		}
 	}
+	//validation (isNum, in_array, isset($allowed[$x]) ...) counts only within its own scope
+	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
+		$flat=securityScanFlatten($st['segs']);
+		if(strpos($flat,'$')===false){continue;}
+		foreach($p['guards'] as $rx){
+			if(!preg_match_all($rx,$flat,$gm)){continue;}
+			foreach($gm[1] as $g){$pg['guarded'][securityScanQ($pg,$g)]=1;}
+		}
+		foreach($p['src_guards'] as $rx){
+			if(!preg_match_all($rx,$flat,$gm)){continue;}
+			foreach($gm[1] as $g){$pg['srcguarded'][$st['scope'].'|'.securityScanSrcKey($g)]=1;}
+		}
+	}
+	$pg['cur']='';
+	$pg['hasauth']=preg_match($p['auth_call'],$raw)==1;
 	return $pg;
 }
 
@@ -447,7 +536,8 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 		foreach($items as $it){
 			list($name,$idx,$rest)=$it;
 			//a variable used only as an array subscript ($row[$k]) doesn't flow into the value
-			if(preg_match('~\$\w+(?:\[[^\]]*\])*\[\s*$~',substr($text,max(0,$idx-60),min($idx,60)))){continue;}
+			$subpre=$kind=='code'?substr(securityScanFlatten(array_slice($segs,max(0,$si-4),min($si,4))).substr($text,0,$idx),-160):substr($text,max(0,$idx-60),min($idx,60));
+			if(preg_match('~\$\w+(?:\[[^\]]*\])*\[\s*$~',$subpre)){continue;}
 			if($kind=='code'){
 				$from=max(0,$idx-80);
 				$before=substr($text,$from,$idx-$from);
@@ -462,11 +552,14 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 				if($concatonly && !preg_match('~(?<!\.)\.\s*$~',substr($text,0,$idx)) && !preg_match('~^(?:\[[^\]]*\]|->\w+)*\s*\.(?!=)~',$rest)){continue;}
 			}
 			$src=securityScanIsSource($name,$rest);
-			if(!$src && (!isset($pg['taint'][$name]) || isset($p['skip_vars'][$name]))){continue;}
+			if(!$src && (!isset($pg['taint'][securityScanQ($pg,$name)]) || isset($p['skip_vars'][$name]))){continue;}
+			if(securityScanFilesSafe($pg,$name,$rest,$src)){continue;}
 			if($callfilter){
 				$prefix=securityScanFlatten(array_slice($segs,0,$si)).($kind=='code'?substr($text,0,$idx):'"');
 				$skip=false;
 				foreach(securityScanEnclosingCalls($prefix) as $c){
+					//header values: str_replace/preg_replace are how line breaks get stripped
+					if($ctx=='mail' && isset($p['mail_strip'][$c])){$skip=true;break;}
 					if(isset($p['passthrough'][$c]) || isset($p['constructs'][$c])){continue;}
 					if($ctx=='sql' && isset($p['sql_sink_calls'][$c])){continue;}
 					$skip=true;
@@ -477,15 +570,20 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 			if($src){
 				$label=securityScanSourceLabel($name,$rest);
 				$reason=preg_match('~HTTP_HOST|SERVER_NAME~',$label)?'Host header - normally only exploitable via cache poisoning':'';
+				if(!strlen($reason) && isset($pg['srcguarded'][$pg['cur'].'|'.securityScanSrcKey($label)])){
+					$reason='validated elsewhere in the same function - check it covers this line';
+				}
 				$out[]=array($start+$idx,$label,'direct','src',$reason);
 				continue;
 			}
-			$t=$pg['taint'][$name];
+			$t=$pg['taint'][securityScanQ($pg,$name)];
 			if($ctx=='sql' && !$t['sql']){continue;}
 			if($ctx=='html' && !$t['html']){continue;}
 			$reason='';
-			if(isset($pg['guarded'][$name])){$reason='validated somewhere on this page - check it covers this path';}
-			elseif(isset($pg['mixed'][$name])){$reason='name also holds non-request data elsewhere on this page';}
+			if(isset($pg['guarded'][securityScanQ($pg,$name)])){$reason='validated elsewhere in the same function - check it covers this line';}
+			elseif(securityScanIsCleaned($pg,$name,$ctx)){$reason='escaped or validated in place in this function - check it happens before this line';}
+			elseif(isset($pg['mixed'][securityScanQ($pg,$name)])){$reason='this variable also holds non-request data in this function';}
+			elseif(isset($pg['weak'][securityScanQ($pg,$name)])){$reason='built from values that are validated in this function';}
 			$out[]=array($start+$idx,'$'.$name,$t['origin'],$t['level'],$reason);
 		}
 	}
@@ -523,7 +621,10 @@ function securityScanAdd(&$pg,$severity,$type,$fi,$offset,$var,$origin,$reason='
 */
 function securityScanSetTaint(&$pg,$name,$sql,$html,$level,$origin){
 	$p=securityPatterns();
-	if(isset($p['skip_vars'][$name]) || isset($p['sources'][$name]) || !($sql || $html)){return false;}
+	$bar=strpos($name,'|');
+	$bare=$bar===false?$name:substr($name,$bar+1);
+	if(isset($p['skip_vars'][$bare]) || isset($p['sources'][$bare]) || !($sql || $html)){return false;}
+	if($bar===false){$name=securityScanQ($pg,$name);}
 	if(!isset($pg['taint'][$name])){
 		$pg['taint'][$name]=array('sql'=>$sql,'html'=>$html,'level'=>$level,'origin'=>$origin);
 		return true;
@@ -554,7 +655,7 @@ function securityScanRhs(&$pg,$st){
 	$flat=securityScanFlatten($rhs);
 	//isNum($x)?$x:0 style validated ternaries
 	if(preg_match('~^\s*!?\s*(?:isNum|is_numeric|ctype_digit|ctype_alnum|in_array|preg_match|isEmail|isDate)\s*\([^?]*\?~i',$flat)){
-		return array($lhs,null,false,false);
+		return array(securityScanQ($pg,$lhs),null,false,false,array(),false);
 	}
 	//plain ternary: the condition doesn't flow into the result
 	$startat=0;
@@ -573,17 +674,23 @@ function securityScanRhs(&$pg,$st){
 	$best=null;
 	$sqlany=false;
 	$htmlany=false;
+	$contrib=array();
+	$hassrc=false;
+	$whitelist=securityScanWhitelistReplace($rhs);
 	foreach(securityScanVars($flat,false) as $v){
 		list($name,$idx,$rest)=$v;
 		if($idx<$startat){continue;}
 		$src=securityScanIsSource($name,$rest);
+		if(securityScanFilesSafe($pg,$name,$rest,$src)){continue;}
+		//used only as an array key ($orders[$sort]) - the value comes from the array, not the request
+		if(preg_match('~\$\w+(?:\[[^\]]*\])*\[\s*$~',substr($flat,max(0,$idx-160),min($idx,160)))){continue;}
 		if($src){
 			$level='src';
 			$origin=securityScanSourceLabel($name,$rest).' line '.securityScanLine($pg,$st['file'],$rhs[0][2]);
 		}
-		elseif(isset($pg['taint'][$name]) && !isset($p['skip_vars'][$name])){
-			$level=$pg['taint'][$name]['level'];
-			$origin=$pg['taint'][$name]['origin'];
+		elseif(isset($pg['taint'][securityScanQ($pg,$name)]) && !isset($p['skip_vars'][$name])){
+			$level=$pg['taint'][securityScanQ($pg,$name)]['level'];
+			$origin=$pg['taint'][securityScanQ($pg,$name)]['origin'];
 		}
 		else{continue;}
 		$before=substr($flat,0,$idx);
@@ -592,6 +699,7 @@ function securityScanRhs(&$pg,$st){
 		$sql=true;
 		$html=true;
 		$wrapped=false;
+		if($whitelist && in_array('preg_replace',$calls)){continue;}
 		foreach($calls as $c){
 			if(preg_match($p['sql_san_names'],$c)){$sql=false;continue;}
 			if(preg_match($p['html_san_names'],$c)){$html=false;continue;}
@@ -600,15 +708,17 @@ function securityScanRhs(&$pg,$st){
 		//wrapped in a call whose result isn't the raw input (DB lookup, isNum, count...)
 		if($wrapped){continue;}
 		if(!$src){
-			$sql=$sql && $pg['taint'][$name]['sql'];
-			$html=$html && $pg['taint'][$name]['html'];
+			$sql=$sql && $pg['taint'][securityScanQ($pg,$name)]['sql'];
+			$html=$html && $pg['taint'][securityScanQ($pg,$name)]['html'];
 		}
 		if(!($sql || $html)){continue;}
 		$sqlany=$sqlany || $sql;
 		$htmlany=$htmlany || $html;
+		if($src){$hassrc=true;}
+		else{$contrib[securityScanQ($pg,$name)]=1;}
 		if(is_null($best) || ($level=='src' && $best[0]!='src')){$best=array($level,$origin);}
 	}
-	return array($lhs,$best,$sqlany,$htmlany);
+	return array(securityScanQ($pg,$lhs),$best,$sqlany,$htmlany,array_keys($contrib),$hassrc);
 }
 
 //---------- begin function securityScanForeachSubject
@@ -636,6 +746,7 @@ function securityScanPropagate(&$pg){
 	for($pass=0;$pass<6;$pass++){
 		$changed=false;
 		foreach($pg['stmts'] as $st){
+			$pg['cur']=$st['scope'];
 			if($st['echo']){continue;}
 			//assignment
 			$r=securityScanRhs($pg,$st);
@@ -648,7 +759,7 @@ function securityScanPropagate(&$pg){
 				$hit=null;
 				foreach(securityScanVars($fe[0],false) as $v){
 					if(securityScanIsSource($v[0],$v[2])){$hit=array('src',securityScanSourceLabel($v[0],$v[2]));break;}
-					if(isset($pg['taint'][$v[0]])){$hit=array($pg['taint'][$v[0]]['level'],$pg['taint'][$v[0]]['origin']);break;}
+					if(isset($pg['taint'][securityScanQ($pg,$v[0])])){$hit=array($pg['taint'][securityScanQ($pg,$v[0])]['level'],$pg['taint'][securityScanQ($pg,$v[0])]['origin']);break;}
 				}
 				if(!is_null($hit)){
 					foreach(array($fe[1],$fe[2]) as $lv){
@@ -672,9 +783,9 @@ function securityScanPropagate(&$pg){
 					if(preg_match($p['san_common_any'],$arg)){continue;}
 					foreach(securityScanVars($arg,false) as $v){
 						$src=securityScanIsSource($v[0],$v[2]);
-						if($src || (isset($pg['taint'][$v[0]]) && $pg['taint'][$v[0]]['level']=='src')){
-							$origin=$src?securityScanSourceLabel($v[0],$v[2]):$pg['taint'][$v[0]]['origin'];
-							if(securityScanSetTaint($pg,$params[$ai],true,true,'param',"param of {$fname}() from {$origin}")){$changed=true;}
+						if($src || isset($pg['taint'][securityScanQ($pg,$v[0])])){
+							$origin=$src?securityScanSourceLabel($v[0],$v[2]):$pg['taint'][securityScanQ($pg,$v[0])]['origin'];
+							if(securityScanSetTaint($pg,$fname.'|'.$params[$ai],true,true,'param',"param of {$fname}() from {$origin}")){$changed=true;}
 							break;
 						}
 					}
@@ -693,6 +804,7 @@ function securityScanPropagate(&$pg){
 */
 function securityScanFindMixed(&$pg){
 	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
 		if($st['echo']){continue;}
 		$first=$st['segs'][0];
 		if($first[0]=='code' && preg_match('~^\s*\$\w+\s*=(?![=>])~',$first[1])){
@@ -703,14 +815,225 @@ function securityScanFindMixed(&$pg){
 		if(is_array($fe)){
 			$tainted=false;
 			foreach(securityScanVars($fe[0],false) as $v){
-				if(securityScanIsSource($v[0],$v[2]) || isset($pg['taint'][$v[0]])){$tainted=true;break;}
+				if(securityScanIsSource($v[0],$v[2]) || isset($pg['taint'][securityScanQ($pg,$v[0])])){$tainted=true;break;}
 			}
 			if(!$tainted){
-				foreach(array($fe[1],$fe[2]) as $lv){if(strlen($lv)){$pg['mixed'][$lv]=1;}}
+				foreach(array($fe[1],$fe[2]) as $lv){if(strlen($lv)){$pg['mixed'][securityScanQ($pg,$lv)]=1;}}
 			}
 		}
 	}
+	//list($a,$b)=... / [$a,$b]=... from non-request data
+	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
+		if($st['echo'] || $st['segs'][0][0]!='code'){continue;}
+		if(!preg_match('~^\s*(?:list\s*\(([^)]*)\)|\[([^\]=]*)\])\s*=(?![=>])~i',$st['segs'][0][1],$lm)){continue;}
+		$rhs=substr(securityScanFlatten($st['segs']),strlen($lm[0]));
+		$tainted=false;
+		foreach(securityScanVars($rhs,false) as $v){
+			if(securityScanIsSource($v[0],$v[2]) || isset($pg['taint'][securityScanQ($pg,$v[0])])){$tainted=true;break;}
+		}
+		if($tainted){continue;}
+		preg_match_all('~\$(\w+)~',(isset($lm[2]) && strlen($lm[2]))?$lm[2]:$lm[1],$vm);
+		foreach($vm[1] as $vn){$pg['mixed'][securityScanQ($pg,$vn)]=1;}
+	}
 	foreach($pg['guarded'] as $g=>$x){unset($pg['mixed'][$g]);}
+}
+
+//---------- begin function securityScanFindCleaned
+/**
+* @describe variables sanitized in place somewhere on the page: $x=addslashes($x), $x=(int)$x,
+*	$x=encodeHtml($x), $x=preg_replace('/[^a-z0-9-]/','',$x). Stored per context (all/sql/html).
+* @return void
+* @usage securityScanFindCleaned($pg);
+*/
+function securityScanFindCleaned(&$pg){
+	$p=securityPatterns();
+	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
+		if($st['echo']){continue;}
+		$first=$st['segs'][0];
+		if($first[0]!='code' || !preg_match($p['assign'],$first[1],$m) || $m[2]!='='){continue;}
+		$lhs=$m[1];
+		$ql=securityScanQ($pg,$lhs);
+		$rhs=array_merge(array(array('code',substr($first[1],strlen($m[0])),$first[2]+strlen($m[0]))),array_slice($st['segs'],1));
+		$flat=securityScanFlatten($rhs);
+		$whitelist=securityScanWhitelistReplace($rhs);
+		//$x=$_REQUEST['x'] where that request value was validated in this scope
+		if(preg_match('~^\s*(?:\(\s*string\s*\)\s*)?(?:trim\s*\(\s*)?(\$(?:_REQUEST|_GET|_POST|_COOKIE|PASSTHRU)\s*\[[^\]]*\])\s*\)?\s*$~i',$flat,$sm)
+			&& isset($pg['srcguarded'][$st['scope'].'|'.securityScanSrcKey($sm[1])])){
+			$pg['cleaned']['all'][$ql]=1;
+			continue;
+		}
+		//array_filter($x,'isEmail') keeps only values that pass a validator
+		if(preg_match('~\barray_filter\s*\(\s*\$'.preg_quote($lhs,'~').'\s*,\s*\'(?:isEmail|isNum|is_numeric|ctype_digit|ctype_alnum|isDate)\'~i',$flat)){
+			$pg['cleaned']['all'][$ql]=1;
+			continue;
+		}
+		//line breaks stripped (str_replace/preg_replace/strtr around every request value): safe for mail headers
+		$allstripped=null;
+		foreach(securityScanVars($flat,false) as $v){
+			if(!securityScanIsSource($v[0],$v[2]) && !isset($pg['taint'][securityScanQ($pg,$v[0])])){continue;}
+			$calls=securityScanEnclosingCalls(substr($flat,0,$v[1]));
+			$vq=securityScanQ($pg,$v[0]);
+			//a value that is already header-safe (stripped, cleaned or validated) stays safe when combined
+			$stripped=!securityScanIsSource($v[0],$v[2]) && (isset($pg['cleaned']['mail'][$vq]) || isset($pg['cleaned']['all'][$vq]) || isset($pg['guarded'][$vq]));
+			foreach($calls as $c){if(isset($p['mail_strip'][$c])){$stripped=true;break;}}
+			$allstripped=($allstripped===null?true:$allstripped) && $stripped;
+		}
+		if($allstripped){$pg['cleaned']['mail'][$ql]=1;}
+		foreach(securityScanVars($flat,false) as $v){
+			if($v[0]!=$lhs){continue;}
+			$before=substr($flat,0,$v[1]);
+			if(preg_match($p['cast_end'],$before)){$pg['cleaned']['all'][$ql]=1;break;}
+			foreach(securityScanEnclosingCalls($before) as $c){
+				if(preg_match($p['common_san_names'],$c) || ($c=='preg_replace' && $whitelist)){$pg['cleaned']['all'][$ql]=1;}
+				elseif(preg_match($p['sql_san_names'],$c)){$pg['cleaned']['sql'][$ql]=1;}
+				elseif(preg_match($p['html_san_names'],$c)){$pg['cleaned']['html'][$ql]=1;}
+			}
+			break;
+		}
+	}
+}
+
+//---------- begin function securityScanIsCleaned
+/**
+* @describe true if $name is sanitized in place on the page for this context
+* @return boolean
+* @usage if(securityScanIsCleaned($pg,'slug','sql')){...}
+*/
+function securityScanIsCleaned($pg,$name,$ctx){
+	if(strpos($name,'|')===false){$name=securityScanQ($pg,$name);}
+	if(isset($pg['cleaned']['all'][$name])){return true;}
+	if($ctx=='sql' && isset($pg['cleaned']['sql'][$name])){return true;}
+	if($ctx=='html' && isset($pg['cleaned']['html'][$name])){return true;}
+	if($ctx=='mail' && isset($pg['cleaned']['mail'][$name])){return true;}
+	return false;
+}
+
+//---------- begin function securityScanFindWeak
+/**
+* @describe variables built only from values that are validated or cleaned in the same function
+*	(e.g. $file=$dir.$lang.'.mp3' where $lang is allow-listed): their findings drop to low
+* @return void
+* @usage securityScanFindWeak($pg);
+*/
+function securityScanFindWeak(&$pg){
+	for($pass=0;$pass<6;$pass++){
+		$changed=false;
+		foreach($pg['stmts'] as $st){
+			$pg['cur']=$st['scope'];
+			if($st['echo']){continue;}
+			$r=securityScanRhs($pg,$st);
+			if(!is_array($r) || is_null($r[1]) || $r[5] || !count($r[4]) || isset($pg['weak'][$r[0]])){continue;}
+			$allweak=true;
+			foreach($r[4] as $cn){
+				//only real validation or in-place cleaning counts here - a reused name is too weak to vouch for values built from it
+				if(isset($pg['guarded'][$cn]) || isset($pg['weak'][$cn]) || isset($pg['cleaned']['all'][$cn])){continue;}
+				$allweak=false;
+				break;
+			}
+			if($allweak){$pg['weak'][$r[0]]=1;$changed=true;}
+		}
+		if(!$changed){break;}
+	}
+}
+
+//---------- begin function securityScanWeakParams
+/**
+* @describe marks a function parameter "weak" (findings drop to low) when every call in the record
+*	that passes request-derived data into it passes only values that are validated, cleaned or weak
+*	in the caller's scope - e.g. clickbooksTvSendClip($cache) where the caller built $cache from an
+*	allow-listed $lang and a regex-checked $hash
+* @return boolean - true if any parameter was newly marked
+* @usage $changed=securityScanWeakParams($pg);
+*/
+function securityScanWeakParams(&$pg){
+	$p=securityPatterns();
+	if(!count($pg['funcs'])){return false;}
+	$strong=array();
+	$vouched=array();
+	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
+		$flat=securityScanFlatten($st['segs']);
+		if(strpos($flat,'$')===false){continue;}
+		preg_match_all($p['call'],$flat,$cms,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+		foreach($cms as $cm){
+			$fname=strtolower($cm[1][0]);
+			if(empty($pg['funcs'][$fname])){continue;}
+			if(preg_match('~function\s+&?\s*$~i',substr($flat,0,$cm[1][1]))){continue;}
+			$params=$pg['funcs'][$fname];
+			$args=securityScanSplitArgs($flat,$cm[0][1]+strlen($cm[0][0]));
+			foreach(array_slice($args,0,count($params)) as $ai=>$arg){
+				if(preg_match($p['san_common_any'],$arg)){continue;}
+				$key=$fname.'|'.$params[$ai];
+				foreach(securityScanVars($arg,false) as $v){
+					if(securityScanIsSource($v[0],$v[2])){$strong[$key]=1;continue;}
+					$q=securityScanQ($pg,$v[0]);
+					if(!isset($pg['taint'][$q])){continue;}
+					if(isset($pg['guarded'][$q]) || isset($pg['weak'][$q]) || isset($pg['cleaned']['all'][$q])){$vouched[$key]=1;}
+					else{$strong[$key]=1;}
+				}
+			}
+		}
+	}
+	$pg['cur']='';
+	$changed=false;
+	foreach($vouched as $key=>$x){
+		if(isset($strong[$key]) || isset($pg['weak'][$key])){continue;}
+		$pg['weak'][$key]=1;
+		$changed=true;
+	}
+	return $changed;
+}
+
+//---------- begin function securityScanSrcKey
+/**
+* @describe normalized key for a request expression: $_REQUEST['id'] / $_REQUEST["id"] / $_REQUEST[ id ] -> _REQUEST[id]
+* @param expr string
+* @return string
+* @usage $k=securityScanSrcKey("\$_REQUEST['id']");
+*/
+function securityScanSrcKey($expr){
+	return preg_replace('~[\s\'"$]~','',$expr);
+}
+
+//---------- begin function securityScanFilesSafe
+/**
+* @describe true for $_FILES[..]['tmp_name'|'error'|'size'] (or a variable copied from $_FILES):
+*	PHP fills those in itself, the client can't choose them
+* @return boolean
+* @usage if(securityScanFilesSafe($pg,$name,$rest,$src)){continue;}
+*/
+function securityScanFilesSafe($pg,$name,$rest,$src){
+	$p=securityPatterns();
+	if($src){
+		if($name!='_FILES'){return false;}
+	}
+	elseif(!isset($pg['taint'][securityScanQ($pg,$name)]) || stripos($pg['taint'][securityScanQ($pg,$name)]['origin'],'$_FILES')===false){
+		return false;
+	}
+	return preg_match($p['files_safe'],$rest)==1;
+}
+
+//---------- begin function securityScanWhitelistReplace
+/**
+* @describe true if the segments contain preg_replace('/[^allowed]/','',...), which strips everything outside an allow-listed character class
+* @param segs array
+* @return boolean
+* @usage $ok=securityScanWhitelistReplace($segs);
+*/
+function securityScanWhitelistReplace($segs){
+	$p=securityPatterns();
+	$cnt=count($segs);
+	for($i=0;$i+3<$cnt;$i++){
+		if($segs[$i][0]=='code' && preg_match('~preg_replace\s*\(\s*$~i',$segs[$i][1])
+			&& ($segs[$i+1][0]=='sq' || $segs[$i+1][0]=='dq') && preg_match($p['whitelist_re'],$segs[$i+1][1])
+			&& $segs[$i+2][0]=='code' && preg_match('~^\s*,\s*$~',$segs[$i+2][1])
+			&& ($segs[$i+3][0]=='sq' || $segs[$i+3][0]=='dq') && $segs[$i+3][1]===''){
+			return true;
+		}
+	}
+	return false;
 }
 
 //---------- begin function securityScanSeverity
@@ -752,25 +1075,20 @@ function securityScanValueCut($text,&$depth){
 	return -1;
 }
 
-//---------- begin function securityScanSinks
+//---------- begin function securityScanKeyRanges
 /**
-* @describe check one statement against the SQL, HTML and exec/include/redirect sinks
-* @return void
-* @usage securityScanSinks($pg,$stmt);
+* @describe the value segments of each 'key'=>value pair in a statement whose key is in $keys
+* @param segs array
+* @param keys array - lower-case key => 1
+* @return array - list of segment lists
+* @usage $vals=securityScanKeyRanges($segs,array('-where'=>1));
 */
-function securityScanSinks(&$pg,$st){
-	$p=securityPatterns();
-	$segs=$st['segs'];
-	$fi=$st['file'];
-	$codetxt='';
-	foreach($segs as $s){if($s[0]=='code'){$codetxt.=$s[1];}}
-	$sqlctx=securityScanSqlContext($segs);
-	//---- SQL: values of -where/-order/... keys
-	$ranges=array();
+function securityScanKeyRanges($segs,$keys){
+	$out=array();
 	$cnt=count($segs);
 	for($i=0;$i<$cnt;$i++){
 		$k=$segs[$i][0];
-		if(($k=='sq' || $k=='dq') && isset($p['sql_keys'][strtolower($segs[$i][1])]) && $i+1<$cnt
+		if(($k=='sq' || $k=='dq') && isset($keys[strtolower($segs[$i][1])]) && $i+1<$cnt
 			&& $segs[$i+1][0]=='code' && preg_match('~^\s*=>~',$segs[$i+1][1],$am)){
 			$arrow=$segs[$i+1];
 			$tail=substr($arrow[1],strlen($am[0]));
@@ -786,9 +1104,28 @@ function securityScanSinks(&$pg,$st){
 				}
 				$val[]=$seg;
 			}
-			$ranges[]=array($val,false);
+			$out[]=$val;
 		}
 	}
+	return $out;
+}
+
+//---------- begin function securityScanSinks
+/**
+* @describe check one statement against the SQL, HTML and exec/include/redirect sinks
+* @return void
+* @usage securityScanSinks($pg,$stmt);
+*/
+function securityScanSinks(&$pg,$st){
+	$p=securityPatterns();
+	$segs=$st['segs'];
+	$fi=$st['file'];
+	$codetxt='';
+	foreach($segs as $s){if($s[0]=='code'){$codetxt.=$s[1];}}
+	$sqlctx=securityScanSqlContext($segs);
+	//---- SQL: values of -where/-order/... keys
+	$ranges=array();
+	foreach(securityScanKeyRanges($segs,$p['sql_keys']) as $val){$ranges[]=array($val,false);}
 	//---- SQL: whole statement when it carries an SQL-looking literal (concatenated/interpolated vars only)
 	if($sqlctx){$ranges[]=array($segs,true);}
 	//---- SQL: executeSQL($sql) etc. with a tainted raw SQL-text variable
@@ -799,7 +1136,7 @@ function securityScanSinks(&$pg,$st){
 			//a superglobal passed whole as an opts array is fine (dashless keys)
 			if(substr($o[1],0,2)=='$_' || substr($o[1],0,9)=='$PASSTHRU'){continue;}
 			$name=substr($o[1],1);
-			if(isset($pg['taint'][$name]) && preg_match($p['sql_var_name'],$name)){
+			if(isset($pg['taint'][securityScanQ($pg,$name)]) && preg_match($p['sql_var_name'],$name)){
 				securityScanAdd($pg,securityScanSeverity('high',$o[3],$o[4],false),'sqli',$fi,$o[0],$o[1],$o[2],$o[4]);
 			}
 		}
@@ -824,6 +1161,65 @@ function securityScanSinks(&$pg,$st){
 			securityScanAdd($pg,securityScanSeverity($direct?'high':'medium',$o[3],$o[4],$direct),'xss',$fi,$o[0],$o[1],$o[2],$o[4]);
 		}
 	}
+	//---- a request value that carries a whole SQL statement ($_REQUEST['sql']), passed anywhere
+	if(!$st['echo'] && preg_match('~\(~',$codetxt)){
+		foreach(securityScanOccurrences($pg,$segs,'any',false) as $o){
+			$lbl=$o[2]=='direct'?$o[1]:$o[2];
+			if(!preg_match($p['rawsql_key'],$lbl)){continue;}
+			//report where the request value is first handed off, not in every helper it passes through
+			if($o[3]=='param'){continue;}
+			//only where the value is handed to a real function (not isset/strlen/trim...)
+			$prefix='';
+			foreach($segs as $sx=>$sg){
+				if($o[0]>=$sg[2] && $o[0]<=$sg[2]+strlen($sg[1])){
+					$prefix=securityScanFlatten(array_slice($segs,0,$sx)).($sg[0]=='code'?substr($sg[1],0,$o[0]-$sg[2]):'"');
+					break;
+				}
+			}
+			$real=false;
+			foreach(securityScanEnclosingCalls($prefix) as $c){
+				if($c==='' || isset($p['passthrough'][$c]) || isset($p['constructs'][$c]) || preg_match($p['common_san_names'],$c)){continue;}
+				$real=true;
+				break;
+			}
+			if(!$real){continue;}
+			if($pg['hasauth']){
+				securityScanAdd($pg,'low','sqli',$fi,$o[0],$o[1],($o[2]=='direct'?'direct':$o[2]).' - the request carries a whole SQL statement','an SQL console is fine only if this page is admin-only - confirm the access check covers it');
+			}
+			else{
+				securityScanAdd($pg,'high','sqli',$fi,$o[0],$o[1],($o[2]=='direct'?'direct':$o[2]).' - the request carries a whole SQL statement','');
+			}
+		}
+	}
+	//---- $USER[...] = ... inside an if()/elseif()/while() condition: an assignment where a comparison was meant
+	if(!$st['echo'] && stripos($codetxt,'$USER')!==false){
+		$flat=securityScanFlatten($segs);
+		if(preg_match($p['auth_assign'],$flat,$am,PREG_OFFSET_CAPTURE)){
+			//the condition must still be open at the assignment (not a separate statement)
+			$cond=substr($flat,0,$am[1][1]);
+			if(substr_count($cond,'(')>substr_count($cond,')')){
+				$off=$segs[0][2];
+				securityScanAdd($pg,'high','auth',$fi,$off,$am[1][0],'assignment (=) inside a condition: it always succeeds and overwrites '.$am[1][0].' - use == to compare','');
+			}
+		}
+	}
+	//---- mail headers: from/subject/to/cc/bcc/reply-to of a sendMail-style options array
+	if($pg['mailpage']){
+		$optkeys=0;
+		$cnt=count($segs);
+		for($i=0;$i+1<$cnt;$i++){
+			if(($segs[$i][0]=='sq' || $segs[$i][0]=='dq') && isset($p['mail_opt_keys'][strtolower($segs[$i][1])])
+				&& $segs[$i+1][0]=='code' && preg_match('~^\s*=>~',$segs[$i+1][1])){$optkeys++;}
+		}
+		if($optkeys>=2){
+			foreach(securityScanKeyRanges($segs,$p['mail_keys']) as $val){
+				foreach(securityScanOccurrences($pg,$val,'mail',true,false) as $o){
+					$direct=$o[2]=='direct';
+					securityScanAdd($pg,securityScanSeverity($direct?'high':'medium',$o[3],$o[4],$direct),'mailheader',$fi,$o[0],$o[1],$o[2],$o[4]);
+				}
+			}
+		}
+	}
 	//---- exec / include / redirect
 	$type='';
 	$sev='';
@@ -837,9 +1233,106 @@ function securityScanSinks(&$pg,$st){
 		}
 	}
 	if(!strlen($type)){return;}
+	$spans=$type=='exec'?securityScanPathArgSpans($segs):null;
 	foreach(securityScanOccurrences($pg,$segs,'any',false) as $o){
+		if(is_array($spans)){
+			$inpath=false;
+			foreach($spans as $sp){if($o[0]>=$sp[0] && $o[0]<$sp[1]){$inpath=true;break;}}
+			if(!$inpath){continue;}
+		}
 		securityScanAdd($pg,securityScanSeverity($sev,$o[3],$o[4],$o[2]=='direct'),$type,$fi,$o[0],$o[1],$o[2],$o[4]);
 	}
+}
+
+//---------- begin function securityScanPathArgSpans
+/**
+* @describe for a statement whose only exec-type call is a file function (file_put_contents, fopen,
+*	move_uploaded_file...), the byte ranges of its path argument(s): data written INTO a fixed path is
+*	not the danger, the path is. Returns null when any other exec-type call is present (check everything).
+* @param segs array
+* @return mixed - list of array(start,end) offsets, or null
+* @usage $spans=securityScanPathArgSpans($segs);
+*/
+function securityScanPathArgSpans($segs){
+	$p=securityPatterns();
+	$code='';
+	foreach($segs as $s){if($s[0]=='code'){$code.=$s[1].' ';}}
+	if(!preg_match_all('~(?<![$\w>:])([A-Za-z_]\w*)\s*\(~',$code,$cm)){return null;}
+	$found=false;
+	foreach($cm[1] as $fn){
+		$lf=strtolower($fn);
+		if(isset($p['path_args'][$lf])){$found=true;continue;}
+		if(preg_match($p['exec'],$fn.'(')){return null;}
+	}
+	if(!$found || preg_match('~(?<![$\w>:])(?:include|include_once|require|require_once)\b~i',$code)){return null;}
+	//walk the segments: find each file-function call and record the offsets of its allowed arguments
+	$spans=array();
+	$cnt=count($segs);
+	for($i=0;$i<$cnt;$i++){
+		if($segs[$i][0]!='code'){continue;}
+		if(!preg_match_all('~(?<![$\w>:])([A-Za-z_]\w*)\s*\(~',$segs[$i][1],$ms,PREG_OFFSET_CAPTURE)){continue;}
+		foreach($ms[1] as $k=>$mm){
+			$lf=strtolower($mm[0]);
+			if(!isset($p['path_args'][$lf])){continue;}
+			$allowed=$p['path_args'][$lf];
+			$arg=0;
+			$depth=0;
+			$argstart=$segs[$i][2]+$ms[0][$k][1]+strlen($ms[0][$k][0]);
+			$done=false;
+			for($j=$i;$j<$cnt && !$done;$j++){
+				if($segs[$j][0]!='code'){continue;}
+				$text=$segs[$j][1];
+				$from=$j==$i?$ms[0][$k][1]+strlen($ms[0][$k][0]):0;
+				for($c=$from;$c<strlen($text);$c++){
+					$ch=$text[$c];
+					if($ch=='(' || $ch=='['){$depth++;}
+					elseif($ch==')' || $ch==']'){
+						if($depth==0){
+							if(in_array($arg,$allowed)){$spans[]=array($argstart,$segs[$j][2]+$c);}
+							$done=true;
+							break;
+						}
+						$depth--;
+					}
+					elseif($ch==',' && $depth==0){
+						if(in_array($arg,$allowed)){$spans[]=array($argstart,$segs[$j][2]+$c);}
+						$arg++;
+						$argstart=$segs[$j][2]+$c+1;
+					}
+				}
+			}
+		}
+	}
+	return $spans;
+}
+
+//---------- begin function securityScanNoAuth
+/**
+* @describe adds one 'auth' finding when a record has high/medium exec, include or raw-SQL findings
+*	but no access check anywhere (isUser, isAdmin, a *HasPerm call, $USER['_id'], a login view...):
+*	anyone who can reach the URL can use it
+* @return void
+* @usage securityScanNoAuth($pg);
+*/
+function securityScanNoAuth(&$pg){
+	$p=securityPatterns();
+	$why=array();
+	foreach($pg['findings'] as $f){
+		if($f['severity']=='low'){continue;}
+		if($f['type']=='exec' || $f['type']=='include'){$why[$f['type']]=1;}
+		if($f['type']=='sqli' && strpos($f['origin'],'whole SQL statement')!==false){$why['raw SQL']=1;}
+	}
+	if(!count($why)){return;}
+	foreach($pg['files'] as $f){
+		if(preg_match($p['auth_call'],$f['text'])){return;}
+	}
+	//report on the controller when there is one, else the first field
+	$fi=0;
+	foreach($pg['files'] as $i=>$f){
+		if((isset($f['meta']['field']) && $f['meta']['field']=='controller') || preg_match('~\.controller\.~',$f['label'])){$fi=$i;break;}
+	}
+	$what=implode(', ',array_keys($why));
+	securityScanAdd($pg,'high','auth',$fi,0,'(no login check)',"this page has {$what} findings but never checks isUser()/isAdmin() or a permission - anyone who can reach the URL can use it",'');
 }
 
 //---------- begin function securityScanGroups
@@ -858,7 +1351,15 @@ function securityScanGroups($groups){
 		if(!count($pg['stmts'])){continue;}
 		securityScanPropagate($pg);
 		securityScanFindMixed($pg);
-		foreach($pg['stmts'] as $st){securityScanSinks($pg,$st);}
+		securityScanFindCleaned($pg);
+		securityScanFindWeak($pg);
+		//a helper parameter fed only validated values by every caller counts as validated too
+		for($round=0;$round<8;$round++){
+			if(!securityScanWeakParams($pg)){break;}
+			securityScanFindWeak($pg);
+		}
+		foreach($pg['stmts'] as $st){$pg['cur']=$st['scope'];securityScanSinks($pg,$st);}
+		securityScanNoAuth($pg);
 		foreach($pg['findings'] as $f){$findings[]=$f;}
 	}
 	usort($findings,function($a,$b) use ($p){
@@ -941,6 +1442,8 @@ function securityTypeLabels(){
 		'exec'=>array('label'=>'Code / file execution','desc'=>'Request data reaches eval, include, shell, file or unserialize calls.'),
 		'include'=>array('label'=>'Page inclusion','desc'=>'Request data picks which page or function set is loaded.'),
 		'redirect'=>array('label'=>'Open redirect','desc'=>'Request data controls a Location: redirect.'),
+		'auth'=>array('label'=>'Missing or broken access check','desc'=>'A dangerous page has no login check, or an access check assigns (=) where it should compare (==) and so always passes.'),
+		'mailheader'=>array('label'=>'Email header injection','desc'=>'Request data goes into an email\'s From, Subject, To, Cc, Bcc or Reply-To. A line break lets a visitor add headers or recipients.'),
 	);
 }
 
@@ -1069,7 +1572,7 @@ function securityRenderFindingsTable($findings,$severity){
 	$intro=array(
 		'high'=>'Request data reaches the sink directly or through a variable assigned straight from the request. Fix these first.',
 		'medium'=>'Request data reaches the sink through a function parameter, or a request-derived variable is written into HTML.',
-		'low'=>'Worth a look, not necessarily a bug: the variable is validated somewhere on the page, shares its name with non-request data, or the issue is minor (Host header, redirect). Confirm the validation covers the flagged line.',
+		'low'=>'Worth a look, not necessarily a bug: the value is validated or escaped elsewhere in the same function, the variable also holds non-request data, or the issue is minor (Host header, redirect). Confirm the validation covers the flagged line.',
 	);
 	$rtn='<div class="w_gray w_small" style="margin-bottom:6px;">'.$intro[$severity].'</div>'.PHP_EOL;
 	$rtn.='<div class="sec_tablewrap"><table class="wacss_table is-striped is-sticky" style="width:100%;">'.PHP_EOL;
@@ -1122,6 +1625,9 @@ function securityAIPrompt($scan,$site=''){
 	$lines[]='- HTML output: wrap request-derived values in `encodeHtml()`, e.g. `<?=encodeHtml($_REQUEST[\'q\']);?'.'>`, including inside attributes (value="", data-*="", href="").';
 	$lines[]='- include/eval/file functions: never pass request data. Map the input to an allow-listed value first.';
 	$lines[]='- Redirects: only redirect to relative paths or an allow-listed host.';
+	$lines[]='- Access checks: pages that run commands, raw SQL, or expose schema/admin data need `if(!isAdmin()){setView(\'no_access\',1);return;}` (or isUser()/a permission check) at the top of the controller, with a matching <view:no_access> block in the body. In conditions, compare with `==`, never `=`: `if($USER[\'_id\']==$post[\'_cuser\'])`.';
+	$lines[]='- Shell commands (cmdResults, exec, shell_exec...): never build them from request data. Allow-list each value (strict regex for ids, fixed lists for options) and wrap arguments in escapeshellarg().';
+	$lines[]='- Email headers (from, subject, to, cc, bcc, reply-to in sendMail/commonSendMail options): strip line breaks, e.g. `str_replace(array("\\r","\\n"),\' \',$v)`, and check addresses with `isEmail()`. WaSQL cores from 2026-11-28 on strip line breaks centrally in sendMail (commonMailSanitizeParams), but servers on an older core copy these values into the mail headers as-is, so fix the page too.';
 	$lines[]='- Return errors with WaSQL conventions: a DB write returns the new id or an error string, so test it with `isNum()`.';
 	$order=array('high'=>'HIGH','medium'=>'MEDIUM');
 	foreach($order as $sev=>$label){

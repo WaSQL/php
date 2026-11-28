@@ -36,7 +36,7 @@ foreach(array_slice($argv,1) as $arg){
 }
 $sevs=array('low'=>0,'medium'=>1,'high'=>2);
 if(!isset($sevs[$opts['min']])){fwrite(STDERR,"--min must be low, medium or high\n");exit(2);}
-$alltypes=array('sqli','xss','exec','include','redirect');
+$alltypes=array('sqli','xss','exec','include','redirect','mailheader','auth');
 $types=$alltypes;
 if(strlen($opts['types'])){
 	$types=array_filter(array_map('trim',explode(',',$opts['types'])));
